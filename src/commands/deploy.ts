@@ -87,6 +87,8 @@ export default class Deploy extends Command {
       lcd,
     });
 
-    fs.copyFileSync(flags['refs-path'], flags['frontend-refs-path']);
+    try {
+      fs.copyFileSync(flags['refs-path'], flags['frontend-refs-path']);
+    } catch (error) {}
   }
 }
