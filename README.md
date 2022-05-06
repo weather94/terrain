@@ -385,7 +385,7 @@ task(async ({ wallets, client, deploy }) => {
 
 # Migrating CosmWasm Contracts on Terra
 
-On Terra it is possible to initilize contracts as migratable. This functionallity allows the adminstrator to upload a new version of the contract, then send a migrate message to move to the new code.
+On Terra it is possible to initalize contracts as migratable. This functionallity allows the adminstrator to upload a new version of the contract, then send a migrate message to move to the new code.
 
 <a href="https://docs.terra.money/docs/develop/dapp/quick-start/contract-migration.html" target="_blank">This tutorial</a> builds on top of the Terrain Quick Start Guide and walks you through a contract migration.
 
@@ -444,8 +444,6 @@ To use the main branch of the Terrain repo on your local machine, do the followi
 
 1. Clone the repo.
 
-<<<<<<< Updated upstream
-=======
 <!-- usage -->
 ```sh-session
 $ npm install -g @terra-money/terrain
@@ -459,18 +457,7 @@ USAGE
 ...
 ```
 <!-- usagestop -->
-```sh-session
-$ npm install -g @terra-money/terrain
-$ terrain COMMAND
-running command...
-$ terrain (-v|--version|version)
-@terra-money/terrain/0.2.0 darwin-x64 node-v16.9.1
-$ terrain --help [COMMAND]
-USAGE
-  $ terrain COMMAND
-...
->>>>>>> Stashed changes
-```
+
 git clone --branch main --depth 1 https://github.com/terra-money/terrain
 ```
 
