@@ -51,18 +51,11 @@ export const storeCode = async ({
 
   if (!noRebuild) {
     execSync('cargo wasm', { stdio: 'inherit' });
-
+    execSync("cargo run-script optimize", { stdio: "inherit" });
     if (arm64) {
-      // Need to use the rust-optimizer-arm64 image on arm64 architecture.
-      execSync('docker run --rm -v "$(pwd)":/code \
-        --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
-        --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-        cosmwasm/rust-optimizer-arm64:0.12.5', { stdio: 'inherit' });
+      execSync("cargo run-script optimizearm64", { stdio: "inherit" });
     } else {
-      execSync('docker run --rm -v "$(pwd)":/code \
-        --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
-        --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-        cosmwasm/rust-optimizer:0.12.5', { stdio: 'inherit' });
+      execSync("cargo run-script optimize", { stdio: "inherit" });
     }
   }
 
