@@ -7,20 +7,20 @@ import {
   MsgMigrateContract,
   MsgStoreCode,
   Wallet,
-} from '@terra-money/terra.js';
-import { parse } from 'toml';
-import { execSync } from 'child_process';
-import * as fs from 'fs-extra';
-import { cli } from 'cli-ux';
-import * as YAML from 'yaml';
-import { waitForInclusionInBlock } from '../lib/waitForInclusionBlock';
+} from "@terra-money/terra.js";
+import { parse } from "toml";
+import { execSync } from "child_process";
+import * as fs from "fs-extra";
+import { cli } from "cli-ux";
+import * as YAML from "yaml";
+import { waitForInclusionInBlock } from "../lib/waitForInclusionBlock";
 import {
   ContractConfig,
   loadRefs,
   saveRefs,
   setCodeId,
   setContractAddress,
-} from '../config';
+} from "../config";
 
 type StoreCodeParams = {
   conf: ContractConfig;
@@ -44,45 +44,45 @@ export const storeCode = async ({
   arm64,
 }: StoreCodeParams) => {
   process.chdir(`contracts/${contract}`);
-  const { package: pkg } = parse(fs.readFileSync('./Cargo.toml', 'utf-8'));
+  const { package: pkg } = parse(fs.readFileSync("./Cargo.toml", "utf-8"));
   if (contract !== pkg.name) {
     cli.error(`Change the package name in Cargo.toml to ${contract} to build`);
   }
 
   if (!noRebuild) {
-    execSync('cargo wasm', { stdio: 'inherit' });
+    execSync("cargo wasm", { stdio: "inherit" });
     execSync("cargo run-script optimize", { stdio: "inherit" });
-    if (arm64) {
-      execSync("cargo run-script optimizearm64", { stdio: "inherit" });
-    } else {
-      execSync("cargo run-script optimize", { stdio: "inherit" });
-    }
+    // if (arm64) {
+    //   execSync("cargo run-script optimizearm64", { stdio: "inherit" });
+    // } else {
+    //   execSync("cargo run-script optimize", { stdio: "inherit" });
+    // }
   }
 
-  let wasmByteCodeFilename = `${contract.replace(/-/g, '_')}`;
+  let wasmByteCodeFilename = `${contract.replace(/-/g, "_")}`;
 
   // rust-optimizer-arm64 produces a file with the `-aarch64` suffix.
   if (arm64) {
-    wasmByteCodeFilename += '-aarch64';
+    wasmByteCodeFilename += "-aarch64";
   }
 
-  wasmByteCodeFilename += '.wasm';
+  wasmByteCodeFilename += ".wasm";
 
   const wasmByteCode = fs
     .readFileSync(`artifacts/${wasmByteCodeFilename}`)
-    .toString('base64');
+    .toString("base64");
 
-  cli.action.start('storing wasm bytecode on chain');
-  
+  cli.action.start("storing wasm bytecode on chain");
+
   const storeCodeTx = await signer.createAndSignTx({
     msgs: [
-      typeof codeId !== 'undefined'
+      typeof codeId !== "undefined"
         ? new MsgMigrateCode(signer.key.accAddress, codeId, wasmByteCode)
         : new MsgStoreCode(signer.key.accAddress, wasmByteCode),
     ],
   });
   const result = await lcd.tx.broadcastSync(storeCodeTx);
-  if ('code' in result) {
+  if ("code" in result) {
     return cli.error(result.raw_log);
   }
 
@@ -90,20 +90,20 @@ export const storeCode = async ({
 
   cli.action.stop();
 
-  if (typeof res === 'undefined') {
-    return cli.error('transaction not included in a block before timeout');
+  if (typeof res === "undefined") {
+    return cli.error("transaction not included in a block before timeout");
   }
 
   try {
-    const savedCodeId = JSON.parse((res && res.raw_log) || '')[0]
-      .events.find((msg: { type: string }) => msg.type === 'store_code')
-      .attributes.find((attr: { key: string }) => attr.key === 'code_id').value;
+    const savedCodeId = JSON.parse((res && res.raw_log) || "")[0]
+      .events.find((msg: { type: string }) => msg.type === "store_code")
+      .attributes.find((attr: { key: string }) => attr.key === "code_id").value;
 
-    process.chdir('../..');
+    process.chdir("../../");
     const updatedRefs = setCodeId(
       network,
       contract,
-      savedCodeId,
+      savedCodeId
     )(loadRefs(refsPath));
     saveRefs(updatedRefs, refsPath);
     cli.log(`code is stored at code id: ${savedCodeId}`);
@@ -181,16 +181,16 @@ export const instantiate = async ({
 
   cli.action.stop();
   const contractAddress = log[0].events
-    .find((event: { type: string }) => event.type === 'instantiate')
+    .find((event: { type: string }) => event.type === "instantiate")
     .attributes.find(
-      (attr: { key: string }) => attr.key === '_contract_address',
+      (attr: { key: string }) => attr.key === "_contract_address"
     ).value;
 
   const updatedRefs = setContractAddress(
     network,
     contract,
     instanceId,
-    contractAddress,
+    contractAddress
   )(loadRefs(refsPath));
   saveRefs(updatedRefs, refsPath);
 
@@ -223,7 +223,9 @@ export const migrate = async ({
 
   const contractAddress = refs[network][contract].contractAddresses[instanceId];
 
-  cli.action.start(`migrating contract with address ${contractAddress} to code id: ${codeId}`);
+  cli.action.start(
+    `migrating contract with address ${contractAddress} to code id: ${codeId}`
+  );
 
   const migrateTx = await signer.createAndSignTx({
     msgs: [
@@ -231,7 +233,7 @@ export const migrate = async ({
         signer.key.accAddress,
         contractAddress,
         codeId,
-        instantiation.instantiateMsg,
+        instantiation.instantiateMsg
       ),
     ],
   });
@@ -256,7 +258,7 @@ export const migrate = async ({
     network,
     contract,
     instanceId,
-    contractAddress,
+    contractAddress
   )(loadRefs(refsPath));
   saveRefs(updatedRefs, refsPath);
 
